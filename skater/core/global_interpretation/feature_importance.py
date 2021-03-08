@@ -334,7 +334,7 @@ def compute_feature_importance(feature_id, input_data, estimator_fn,
                                        feature_names=self.data_set.feature_ids,
                                        index=self.data_set.index)
         samples = copy_of_data_set.generate_column_sample(feature_id, n_samples=n,
-                                                          strategy='uniform-over-similarity-ranks')
+                                                          strategy='stratified')
     else:
         samples = copy_of_data_set.generate_column_sample(feature_id, n_samples=n, strategy='random-choice')
 
