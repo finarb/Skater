@@ -1,4 +1,4 @@
-from sklearn.externals.six import StringIO
+from six import StringIO
 from sklearn.tree import export_graphviz
 import numpy as np
 import pydotplus
