@@ -324,6 +324,15 @@ def compute_feature_importance(feature_id, input_data, estimator_fn,
 
     # collect perturbations
     if feature_info[feature_id]['numeric']:
+        original_predictions = pd.DataFrame(data=original_predictions, columns=["Pred"])
+        self.data_set.data = pd.concat([self.data_set.data.reset_index(drop=True,inplace=False), original_predictions.reset_index(drop=True,inplace=False)], axis=1)
+        self.data_set.data.sort_values(by=[feature_id], ascending=True, inplace=True)
+        self.data_set.data.reset_index(inplace=True, drop=True)
+        original_predictions = np.array(self.data_set.data["Pred"].values.tolist())
+        self.data_set.data.drop(labels=["Pred"], axis=1, inplace=True)
+        copy_of_data_set = DataManager(self.data_set.data.copy(),
+                                       feature_names=self.data_set.feature_ids,
+                                       index=self.data_set.index)
         samples = copy_of_data_set.generate_column_sample(feature_id, n_samples=n,
                                                           strategy='uniform-over-similarity-ranks')
     else:
