@@ -377,7 +377,7 @@ class DataManager(object):
                 of samples to take from each discrete rank.
         """
 
-        __strategy_types__ = ['random-choice', 'uniform-from-percentile', 'uniform-over-similarity-ranks']
+        __strategy_types__ = ['random-choice', 'uniform-from-percentile', 'uniform-over-similarity-ranks','stratified']
 
         bin_count, samples_per_bin = allocate_samples_to_bins(n_samples, ideal_bin_count=bin_count)
         arg_dict = {
@@ -417,6 +417,22 @@ class DataManager(object):
             indices = cuts.groupby(0)['index'].aggregate(agg).apply(lambda x: ast.literal_eval(x)).values
             indices = flatten(indices)
             idx = [self.index[i] for i in indices]
+        elif strategy == 'stratified':
+            if not self.data_info['feature_info'][feature_id]['numeric']:
+            raise exceptions.DataSetError("Stratified sampling is currently "
+                                          "supported for numeric features only.")
+
+            bin_count, samples_per_bin = allocate_samples_to_bins(n_samples, ideal_bin_count=n_bins)
+            percentiles = [100 * (i / bin_count) for i in range(bin_count + 1)]
+
+            bins = list(np.percentile(self[feature_id].dropna(), percentiles))
+            sample_windows = [(bins[i], bins[i + 1]) for i in range(len(bins) - 1)]
+
+            samples = []
+            for window, n in zip(sample_windows, samples_per_bin):
+                samples.append(np.random.uniform(window[0], window[1], size=int(n)).tolist())
+
+            return np.array(flatten(samples))
         else:
             raise ValueError("Strategy {0} not recognized, currently supported strategies: {1}".format(
                 strategy,
