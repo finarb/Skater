@@ -421,8 +421,9 @@ class DataManager(object):
             while runloop:
                 try:
                     self.data_info['feature_info'][list(self.feature_info.keys())[0]]['numeric']
-                except:
                     runloop =False
+                except:
+                    runloop = True
             if not self.data_info['feature_info'][list(self.feature_info.keys())[0]]['numeric']:
                 raise exceptions.DataSetError("Stratified sampling is currently "
                                               "supported for numeric features only.")
