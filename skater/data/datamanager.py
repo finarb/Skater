@@ -241,8 +241,7 @@ class DataManager(object):
         for feature in self.feature_ids:
             x = self[feature]
             samples = self.generate_column_sample(feature, n_samples=10)
-            samples_are_numeric = map(StaticTypes.data_types.is_numeric, np.array(samples))
-            is_numeric = all(samples_are_numeric)
+            is_numeric = not isinstance(samples[0][0],str)
             feature_info[feature] = {
                 'type': self.dtypes.loc[feature],
                 'unique': len(np.unique(x)),
@@ -418,14 +417,20 @@ class DataManager(object):
             indices = flatten(indices)
             idx = [self.index[i] for i in indices]
         elif strategy == 'stratified':
-            if not self.data_info['feature_info'][feature_id]['numeric']:
+            runloop = True
+            while runloop:
+                try:
+                    self.data_info['feature_info'][list(self.feature_info.keys())[0]]['numeric']
+                except:
+                    runloop =False
+            if not self.data_info['feature_info'][list(self.feature_info.keys())[0]]['numeric']:
                 raise exceptions.DataSetError("Stratified sampling is currently "
                                               "supported for numeric features only.")
 
-            bin_count, samples_per_bin = allocate_samples_to_bins(n_samples, ideal_bin_count=n_bins)
+            bin_count, samples_per_bin = allocate_samples_to_bins(n_samples, ideal_bin_count=100)
             percentiles = [100 * (i / bin_count) for i in range(bin_count + 1)]
 
-            bins = list(np.percentile(self[feature_id].dropna(), percentiles))
+            bins = list(np.percentile(self.X[~np.isnan(self.X)], percentiles))
             sample_windows = [(bins[i], bins[i + 1]) for i in range(len(bins) - 1)]
 
             samples = []
