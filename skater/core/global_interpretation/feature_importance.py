@@ -321,8 +321,10 @@ def compute_feature_importance(feature_id, input_data, estimator_fn,
     n = copy_of_data_set.n_rows
 
     original_values = copy_of_data_set[feature_id]
-    if original_predictions.shape[1] == 2:
-        original_predictions = original_predictions[:,1]
+    
+    if len(original_predictions.shape) ==2:
+        if original_predictions.shape[1] == 2:
+            original_predictions = original_predictions[:,1]
     # collect perturbations
     if feature_info[feature_id]['numeric']:
         original_predictions = pd.DataFrame(data=original_predictions, columns=["Pred"])
@@ -346,8 +348,9 @@ def compute_feature_importance(feature_id, input_data, estimator_fn,
         new_predictions = estimator_fn(copy_of_data_set.values)
     else:
         new_predictions = estimator_fn(copy_of_data_set.X)
-    if new_predictions.shape[1] == 2:
-        new_predictions = new_predictions[:,1]
+    if len(new_predictions.shape) ==2:
+        if new_predictions.shape[1] == 2:
+            new_predictions = new_predictions[:,1]
 
     importance = compute_importance(new_predictions,
                                     original_predictions,
