@@ -321,23 +321,15 @@ def compute_feature_importance(feature_id, input_data, estimator_fn,
     n = copy_of_data_set.n_rows
 
     original_values = copy_of_data_set[feature_id]
-    
-    if len(original_predictions.shape) ==2:
-        if original_predictions.shape[1] == 2:
-            original_predictions = original_predictions[:,1]
+
     # collect perturbations
     if feature_info[feature_id]['numeric']:
-        original_predictions = pd.DataFrame(data=original_predictions, columns=["Pred"])
-        input_data = pd.concat([input_data.reset_index(drop=True,inplace=False), original_predictions.reset_index(drop=True,inplace=False)], axis=1)
-        input_data.sort_values(by=[feature_id], ascending=True, inplace=True)
-        input_data.reset_index(inplace=True, drop=True)
-        original_predictions = np.array(input_data["Pred"].values.tolist())
-        input_data.drop(labels=["Pred"], axis=1, inplace=True)
-        copy_of_data_set = DataManager(input_data.copy(),
-                                       feature_names=feature_names,
-                                       index=input_data.index)
-        samples = copy_of_data_set.generate_column_sample(feature_id, n_samples=n,
-                                                          strategy='stratified')
+        try:
+            samples = copy_of_data_set.generate_column_sample(feature_id, n_samples=n,
+                                                              strategy='uniform-over-similarity-ranks')
+        except Exception as e:
+            print(str(e))
+            samples = copy_of_data_set.generate_column_sample(feature_id, n_samples=n, strategy='random-choice')
     else:
         samples = copy_of_data_set.generate_column_sample(feature_id, n_samples=n, strategy='random-choice')
 
@@ -348,9 +340,6 @@ def compute_feature_importance(feature_id, input_data, estimator_fn,
         new_predictions = estimator_fn(copy_of_data_set.values)
     else:
         new_predictions = estimator_fn(copy_of_data_set.X)
-    if len(new_predictions.shape) ==2:
-        if new_predictions.shape[1] == 2:
-            new_predictions = new_predictions[:,1]
 
     importance = compute_importance(new_predictions,
                                     original_predictions,
