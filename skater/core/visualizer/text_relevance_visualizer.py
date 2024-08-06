@@ -1,4 +1,4 @@
-from matplotlib.cm import get_cmap
+rom matplotlib.pyplot import get_cmap
 import matplotlib as mpl
 from matplotlib.patches import Patch
 import pandas as pd
