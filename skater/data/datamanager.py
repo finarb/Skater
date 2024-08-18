@@ -37,7 +37,10 @@ class DataManager(object):
         self.logger.debug("__init__ data.shape: {}".format(X.shape))
 
         if ndim == 1:
-            X = X[:, np.newaxis]
+            try:
+                X = X[:, np.newaxis]
+            except:
+                X = np.array(X)[:, np.newaxis]
 
         elif ndim >= 3:
             err_msg = "Invalid Data: expected data to be 1 or 2 dimensions, " \
